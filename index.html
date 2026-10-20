@@ -126,13 +126,12 @@ footer{text-align:center;padding:3rem 1.4rem 3.4rem;background:var(--deep);color
 footer .f-script{font-family:'Great Vibes',cursive;font-size:1.9rem;color:var(--gold-light)}
 footer .f-small{font-size:.68rem;letter-spacing:.3em;text-transform:uppercase;margin-top:.9rem;color:rgba(255,250,240,.45)}
 
-
 /* BACKGROUND MUSIC */
 .music-fab {
   position: fixed;
   left: 1.2rem;
   bottom: 1.2rem;
-  z-index: 60;
+  z-index: 9999;
   width: 64px;
   height: 64px;
   border-radius: 50%;
@@ -141,24 +140,35 @@ footer .f-small{font-size:.68rem;letter-spacing:.3em;text-transform:uppercase;ma
   color: var(--gold-light);
   font-size: 1.65rem;
   cursor: pointer;
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 8px 25px rgba(74,14,24,.4);
-  transition: transform .3s ease;
-  backdrop-filter: blur(3px);
-  opacity: 0.75;
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity .3s ease, transform .3s ease;
 }
 
 .music-fab.show {
-  display: flex;
   animation: musicAttention 1.6s ease-in-out infinite;
 }
-
-.music-fab.show.pulse {
-  opacity: 1;
+.music-fab:not(.show) {
+  display: none;
+}
+.music-fab.pulse {
   animation: none;
+}
+
+@keyframes musicAttention {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 8px 25px rgba(74,14,24,.4);
+  }
+  50% {
+    transform: scale(1.12);
+    box-shadow: 0 0 28px rgba(201,162,75,.9);
+  }
 }
 
 @keyframes musicAttention {
@@ -190,6 +200,15 @@ footer .f-small{font-size:.68rem;letter-spacing:.3em;text-transform:uppercase;ma
   *{animation:none!important;transition:none!important}
   .reveal{opacity:1;transform:none}
 }
+/* Reduce space below the wedding event card */
+#main-event {
+  padding-bottom: 1.5rem;
+}
+
+/* Bring "Kindly Join Us" closer to the event card */
+.blessings {
+  padding-top: 2rem;
+}
 </style>
 </head>
 <body>
@@ -216,7 +235,6 @@ footer .f-small{font-size:.68rem;letter-spacing:.3em;text-transform:uppercase;ma
   <h2 class="hero-names">Priya <span class="amp">&amp;</span> Swarup</h2>
   <p class="hero-date">Friday · 11 December 2026</p>
 
-  <div class="scroll-hint">Scroll</div>
 </header>
 
 <section class="countdown-band" id="countdown">
@@ -366,39 +384,36 @@ footer .f-small{font-size:.68rem;letter-spacing:.3em;text-transform:uppercase;ma
 </script>
   
 <script>
-  // Create a visible music button
+(function () {
+  const bgm = document.getElementById('bgm');
+  if (!bgm) return;
+
+  bgm.volume = 0.45;
+
   const fab = document.createElement('button');
   fab.className = 'music-fab show';
   fab.type = 'button';
-  fab.setAttribute('aria-label', 'Play or pause wedding music');
-  fab.innerHTML = '♪';
-  fab.style.display = 'flex';
+  fab.setAttribute('aria-label', 'Play wedding music');
+  fab.innerHTML = '♫';
+
   document.body.appendChild(fab);
 
-  let playing = false;
-
   function updateButton() {
-  playing = !bgm.paused;
+    const playing = !bgm.paused;
 
-  if (playing) {
-    fab.classList.remove('show');
-  } else {
-    fab.classList.add('show');
+    fab.classList.toggle('show', !playing);
+    fab.innerHTML = playing ? '♫' : '♪';
+
+    fab.setAttribute(
+      'aria-label',
+      playing ? 'Music playing' : 'Play wedding music'
+    );
   }
-
-  fab.classList.toggle('pulse', playing);
-  fab.innerHTML = playing ? '♫' : '♪';
-
-  fab.setAttribute(
-    'aria-label',
-    playing ? 'Music playing' : 'Play wedding music'
-  );
-}
 
   bgm.addEventListener('play', updateButton);
   bgm.addEventListener('pause', updateButton);
+  bgm.addEventListener('ended', updateButton);
 
-  // Play or pause when the visitor taps the music button
   fab.addEventListener('click', async function () {
     try {
       if (bgm.paused) {
@@ -408,16 +423,10 @@ footer .f-small{font-size:.68rem;letter-spacing:.3em;text-transform:uppercase;ma
       }
     } catch (error) {
       console.error('Music playback failed:', error);
-      alert('Music could not start. Please reload and try again.');
     }
   });
 
-  // Attempt autoplay; browsers may block it
-  window.addEventListener('load', function () {
-    bgm.play().catch(function (error) {
-      console.log('Autoplay blocked. Tap the music button.');
-    });
-  });
+  updateButton();
 })();
 </script>
   
